@@ -16,3 +16,6 @@
 | Function | Deployed | Tested | Secrets Required |
 |---|---|---|---|
 | `health-check` | YES | YES (curl) | None |
+| `identify-clip` | YES | YES (mock match, error cases) | ACRCLOUD_HOST, ACRCLOUD_ACCESS_KEY, ACRCLOUD_ACCESS_SECRET, AUDD_API_TOKEN (optional — mock works without) |
+| `post-clip-to-community` | YES | YES (curl) | None |
+| `retry-identification` | YES | Deployed only | None |
