@@ -20,20 +20,13 @@ create extension if not exists "pg_trgm";
 -- Triggers on auth.users
 drop trigger if exists on_auth_user_created on auth.users;
 
--- Remove from realtime
+-- Remove from realtime (no IF EXISTS on DROP TABLE for publications)
 do $$ begin
-  alter publication supabase_realtime drop table if exists public.clips;
-exception when undefined_object then null;
+  alter publication supabase_realtime drop table public.clips;
+exception when others then null;
 end $$;
 
--- Storage
-do $$ begin
-  delete from storage.objects where bucket_id in ('audio-clips');
-  delete from storage.buckets where id in ('audio-clips');
-exception when undefined_table then null;
-end $$;
-
--- Drop storage policies
+-- Drop storage policies from prior migrations
 drop policy if exists "Users can upload to own folder" on storage.objects;
 drop policy if exists "Users can read own audio" on storage.objects;
 drop policy if exists "Users can delete own audio" on storage.objects;
@@ -75,14 +68,7 @@ begin
 end;
 $$;
 
--- 3c. Helper to check if current user is admin
-create or replace function public.is_admin()
-returns boolean language sql stable security definer set search_path = '' as $$
-  select coalesce(
-    (select is_admin from public.profiles where id = auth.uid()),
-    false
-  );
-$$;
+-- NOTE: is_admin() function is created after tables (section 4z)
 
 -- ============================================================
 -- 4. TABLES (dependency order)
@@ -480,6 +466,16 @@ create table public.rate_limit_events (
 );
 
 
+-- 4z. Helper function (depends on profiles table existing)
+create or replace function public.is_admin()
+returns boolean language sql stable security definer set search_path = '' as $$
+  select coalesce(
+    (select is_admin from public.profiles where id = auth.uid()),
+    false
+  );
+$$;
+
+
 -- ============================================================
 -- 5. INDEXES
 -- ============================================================
@@ -502,7 +498,7 @@ create index idx_djs_search on public.djs using gin (search_vector);
 
 -- events
 create index idx_events_venue_start on public.events (venue_id, start_time desc);
-create index idx_events_upcoming on public.events (start_time) where start_time > now();
+create index idx_events_start_time on public.events (start_time);
 create index idx_events_created_by on public.events (created_by) where created_by is not null;
 
 -- dj_event_sets
@@ -889,10 +885,10 @@ begin
 
   -- 3. Fuzzy match on title + artist (pg_trgm similarity)
   select id into v_track_id from public.tracks
-  where similarity(lower(title), lower(p_title)) > 0.6
-    and similarity(lower(artist), lower(p_artist)) > 0.6
-  order by similarity(lower(title), lower(p_title))
-         + similarity(lower(artist), lower(p_artist)) desc
+  where public.similarity(lower(title), lower(p_title)) > 0.6
+    and public.similarity(lower(artist), lower(p_artist)) > 0.6
+  order by public.similarity(lower(title), lower(p_title))
+         + public.similarity(lower(artist), lower(p_artist)) desc
   limit 1;
   if v_track_id is not null then return v_track_id; end if;
 
@@ -1385,10 +1381,16 @@ begin
 
   -- Duplicate found: upvote existing instead of inserting new row
   if v_existing_id is not null then
-    insert into public.votes (community_id, user_id, direction, created_by)
-    values (v_existing_id, new.proposed_by, 'up', new.proposed_by)
-    on conflict (community_id, user_id) do nothing;
-    return null; -- cancel the INSERT
+    -- If same user re-proposes, silently ignore (can't self-vote)
+    if not exists (
+      select 1 from public.community_ids
+      where id = v_existing_id and proposed_by = new.proposed_by
+    ) then
+      insert into public.votes (community_id, user_id, direction, created_by)
+      values (v_existing_id, new.proposed_by, 'up', new.proposed_by)
+      on conflict (community_id, user_id) do nothing;
+    end if;
+    return null; -- cancel the INSERT either way
   end if;
 
   return new; -- proceed with INSERT
@@ -1523,7 +1525,7 @@ create trigger prevent_self_vote before insert on public.votes
 create trigger on_community_id_accepted before update on public.community_ids
   for each row execute function public.on_community_id_accepted();
 
--- 10i. Community ID column restriction (fires after acceptance trigger)
+-- 10i. Community ID column restriction (fires BEFORE acceptance trigger alphabetically)
 create trigger enforce_community_id_columns before update on public.community_ids
   for each row execute function public.enforce_community_id_columns();
 
@@ -1539,24 +1541,35 @@ create trigger handle_community_id_dedup before insert on public.community_ids
 -- audio-clips: private, 10MB, audio MIME types
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('audio-clips', 'audio-clips', false, 10485760,
-  array['audio/mp4', 'audio/mpeg', 'audio/aac', 'audio/wav']);
+  array['audio/mp4', 'audio/mpeg', 'audio/aac', 'audio/wav'])
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
 
 -- avatars: public read, 2MB, image MIME types
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('avatars', 'avatars', true, 2097152,
-  array['image/jpeg', 'image/png', 'image/webp']);
+  array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
 
 -- venue-images: public read, admin write
 insert into storage.buckets (id, name, public)
-values ('venue-images', 'venue-images', true);
+values ('venue-images', 'venue-images', true)
+on conflict (id) do nothing;
 
 -- event-posters: public read, admin write
 insert into storage.buckets (id, name, public)
-values ('event-posters', 'event-posters', true);
+values ('event-posters', 'event-posters', true)
+on conflict (id) do nothing;
 
 -- track-artwork: public read, admin write
 insert into storage.buckets (id, name, public)
-values ('track-artwork', 'track-artwork', true);
+values ('track-artwork', 'track-artwork', true)
+on conflict (id) do nothing;
 
 -- Storage policies: audio-clips
 create policy "audio_upload_own" on storage.objects
