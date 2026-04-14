@@ -16,8 +16,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="record"
         options={{
-          title: 'Record',
-          tabBarIcon: ({ color, size }) => <Ionicons name="mic" size={size} color={color} />,
+          title: 'Identify',
+          tabBarIcon: ({ color, size }) => <Ionicons name="search" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
