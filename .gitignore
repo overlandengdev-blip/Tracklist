@@ -43,5 +43,8 @@ app-example
 /ios
 /android
 
+# Supabase
+supabase/.temp/
+
 # Claude Code
 .claude/
