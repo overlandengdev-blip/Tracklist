@@ -61,8 +61,45 @@ export function createLogger(functionName: string, userId?: string) {
     debug: (msg: string, extra?: Record<string, unknown>) =>
       logDebug(msg, { ...base, ...extra }),
     /** Return a child logger with additional context (e.g., clip_id) */
-    child: (extra: Record<string, unknown>) =>
-      createLogger(functionName, userId),
+    child: (extra: Record<string, unknown>) => {
+      const childBase = { ...base, ...extra };
+      return {
+        info: (msg: string, more?: Record<string, unknown>) =>
+          logInfo(msg, { ...childBase, ...more }),
+        warn: (msg: string, more?: Record<string, unknown>) =>
+          logWarn(msg, { ...childBase, ...more }),
+        error: (msg: string, more?: Record<string, unknown>) =>
+          logError(msg, { ...childBase, ...more }),
+        debug: (msg: string, more?: Record<string, unknown>) =>
+          logDebug(msg, { ...childBase, ...more }),
+        child: (more: Record<string, unknown>) =>
+          createLogger(functionName, userId), // one level deep is enough
+        async timed<T>(
+          label: string,
+          fn: () => Promise<T>,
+          more?: Record<string, unknown>,
+        ): Promise<T> {
+          const start = Date.now();
+          try {
+            const result = await fn();
+            logInfo(`${label} completed`, {
+              ...childBase,
+              ...more,
+              duration_ms: Date.now() - start,
+            });
+            return result;
+          } catch (err) {
+            logError(`${label} failed`, {
+              ...childBase,
+              ...more,
+              duration_ms: Date.now() - start,
+              error: err instanceof Error ? err.message : String(err),
+            });
+            throw err;
+          }
+        },
+      };
+    },
     /** Time a block and log duration */
     async timed<T>(
       label: string,
