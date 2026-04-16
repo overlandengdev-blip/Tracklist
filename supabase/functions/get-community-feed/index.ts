@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
     let query = supabase
       .from("clips")
       .select(
-        "id, user_id, audio_url, status, is_public, venue_id, event_id, dj_id, matched_track_id, resolution_source, created_at, profiles!clips_user_id_fkey(display_name, avatar_url), tracks!clips_matched_track_id_fkey(title, artist, artwork_url)",
+        "id, user_id, audio_path, status, is_public, venue_id, event_id, dj_id, matched_track_id, resolution_source, created_at, profiles!clips_user_id_fkey(display_name, avatar_url), tracks!clips_matched_track_id_fkey(title, artist, artwork_url)",
         { count: "exact" },
       )
       .eq("is_public", true)

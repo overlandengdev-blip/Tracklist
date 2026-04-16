@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     const { data: clip, error } = await supabase
       .from("clips")
       .select(
-        "id, user_id, audio_url, status, is_public, venue_id, event_id, dj_id, matched_track_id, resolution_source, duration_seconds, recorded_at, created_at, profiles!clips_user_id_fkey(id, display_name, avatar_url), tracks!clips_matched_track_id_fkey(id, title, artist, artwork_url, spotify_id, isrc), venues!clips_venue_id_fkey(id, name, slug, city), events!clips_event_id_fkey(id, name, start_time), djs!clips_dj_id_fkey(id, name, slug, avatar_url)",
+        "id, user_id, audio_path, status, is_public, venue_id, event_id, dj_id, matched_track_id, resolution_source, duration_seconds, recorded_at, created_at, profiles!clips_user_id_fkey(id, display_name, avatar_url), tracks!clips_matched_track_id_fkey(id, title, artist, artwork_url, spotify_id, isrc), venues!clips_venue_id_fkey(id, name, slug, city), events!clips_event_id_fkey(id, name, start_time), djs!clips_dj_id_fkey(id, name, slug, avatar_url)",
       )
       .eq("id", clipId)
       .single();

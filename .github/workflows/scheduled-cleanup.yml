@@ -1,0 +1,51 @@
+name: Scheduled Cleanup
+
+on:
+  schedule:
+    # Run daily at 03:00 UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup stale data via Supabase SQL
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          # Delete rate_limit_events older than 7 days
+          psql "$SUPABASE_DB_URL" -c "
+            DELETE FROM public.rate_limit_events
+            WHERE created_at < NOW() - INTERVAL '7 days';
+          "
+
+          # Delete expired service_tokens
+          psql "$SUPABASE_DB_URL" -c "
+            DELETE FROM public.service_tokens
+            WHERE expires_at < NOW() - INTERVAL '1 day';
+          "
+
+          # Clean up read notifications older than 90 days
+          psql "$SUPABASE_DB_URL" -c "
+            DELETE FROM public.notifications
+            WHERE read_at IS NOT NULL
+              AND read_at < NOW() - INTERVAL '90 days';
+          "
+
+          # Clean up orphaned recognitions with no matching clip
+          psql "$SUPABASE_DB_URL" -c "
+            DELETE FROM public.recognitions r
+            WHERE NOT EXISTS (
+              SELECT 1 FROM public.clips c WHERE c.id = r.clip_id
+            );
+          "
+
+          # Delete soft-deleted community_ids older than 30 days
+          psql "$SUPABASE_DB_URL" -c "
+            DELETE FROM public.community_ids
+            WHERE deleted_at IS NOT NULL
+              AND deleted_at < NOW() - INTERVAL '30 days';
+          "
+
+          echo "Cleanup complete at $(date -u)"

@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
 
     const { data: clip, error: clipError } = await supabase
       .from("clips")
-      .select("id, user_id, audio_url, is_public")
+      .select("id, user_id, audio_path, is_public")
       .eq("id", clipId)
       .single();
 
@@ -35,13 +35,13 @@ Deno.serve(async (req) => {
       throw Errors.forbidden("This clip is private");
     }
 
-    if (!clip.audio_url) {
+    if (!clip.audio_path) {
       throw Errors.notFound("Audio file");
     }
 
-    // Extract the storage path from the audio_url
-    // audio_url format: "audio-clips/<user_id>/<filename>"
-    const storagePath = clip.audio_url;
+    // Extract the storage path from the audio_path
+    // audio_path format: "audio-clips/<user_id>/<filename>"
+    const storagePath = clip.audio_path;
 
     const { data: signedUrl, error: signError } = await supabase.storage
       .from("audio-clips")

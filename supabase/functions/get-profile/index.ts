@@ -40,12 +40,29 @@ Deno.serve(async (req) => {
     }
 
     // Stats
-    const [clipsResult, proposalsResult, acceptedResult, badgesResult] = await Promise.all([
+    const [clipsResult, proposalsResult, acceptedResult, userBadgesResult] = await Promise.all([
       supabase.from("clips").select("id", { count: "exact", head: true }).eq("user_id", targetUserId).eq("is_public", true),
       supabase.from("community_ids").select("id", { count: "exact", head: true }).eq("proposed_by", targetUserId),
       supabase.from("community_ids").select("id", { count: "exact", head: true }).eq("proposed_by", targetUserId).eq("is_accepted", true),
-      supabase.from("user_badges").select("badge_id, awarded_at, badges!user_badges_badge_id_fkey(name, slug, icon_url, description)").eq("user_id", targetUserId),
+      supabase.from("user_badges").select("badge_id, earned_at").eq("user_id", targetUserId),
     ]);
+
+    // Enrich badges with badge details in a separate query
+    let badges: unknown[] = [];
+    const userBadges = userBadgesResult.data ?? [];
+    if (userBadges.length > 0) {
+      const badgeIds = userBadges.map((ub) => ub.badge_id);
+      const { data: badgeDetails } = await supabase
+        .from("badges")
+        .select("id, name, slug, icon_url, description")
+        .in("id", badgeIds);
+
+      const badgeMap = new Map((badgeDetails ?? []).map((b) => [b.id, b]));
+      badges = userBadges.map((ub) => ({
+        ...badgeMap.get(ub.badge_id),
+        earned_at: ub.earned_at,
+      }));
+    }
 
     return jsonResponse({
       profile,
@@ -54,7 +71,7 @@ Deno.serve(async (req) => {
         proposals: proposalsResult.count ?? 0,
         accepted_ids: acceptedResult.count ?? 0,
       },
-      badges: badgesResult.data ?? [],
+      badges,
     });
   } catch (err) {
     log.error("Get profile failed", {

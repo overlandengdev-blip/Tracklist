@@ -132,11 +132,11 @@ Deno.serve(async (req) => {
 
 /**
  * Evaluate badge criteria against user stats.
- * Criteria format: { "min_reputation": 100, "min_accepted_ids": 5 }
- * All conditions must be met (AND logic).
+ * Criteria format from DB: { type: "ids_correct_count", threshold: 10 }
+ * or { type: "veteran", clips_threshold: 50, months: 12 }
  */
 function evaluateCriteria(
-  criteria: Record<string, number>,
+  criteria: Record<string, unknown>,
   stats: {
     reputation: number;
     accepted_ids: number;
@@ -144,24 +144,26 @@ function evaluateCriteria(
     clips: number;
   },
 ): boolean {
-  for (const [key, threshold] of Object.entries(criteria)) {
-    switch (key) {
-      case "min_reputation":
-        if (stats.reputation < threshold) return false;
-        break;
-      case "min_accepted_ids":
-        if (stats.accepted_ids < threshold) return false;
-        break;
-      case "min_proposals":
-        if (stats.proposals < threshold) return false;
-        break;
-      case "min_clips":
-        if (stats.clips < threshold) return false;
-        break;
-      default:
-        // Unknown criterion — skip (don't block the badge)
-        break;
-    }
+  const type = criteria.type as string;
+  const threshold = typeof criteria.threshold === "number" ? criteria.threshold : 0;
+
+  switch (type) {
+    case "ids_correct_count":
+      return stats.accepted_ids >= threshold;
+    case "reputation":
+      return stats.reputation >= threshold;
+    case "proposals_count":
+      return stats.proposals >= threshold;
+    case "clips_count":
+      return stats.clips >= threshold;
+    case "genre_ids_count":
+      // Requires genre-specific query — not yet implemented, skip
+      return false;
+    case "veteran":
+      // Requires account age check — not yet implemented, skip
+      return false;
+    default:
+      // Unknown type — don't award
+      return false;
   }
-  return true;
 }
