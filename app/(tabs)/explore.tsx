@@ -1,112 +1,249 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { invoke, type SearchEverythingResponse } from '@/lib/api';
 
-export default function TabTwoScreen() {
+export default function ExploreScreen() {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<SearchEverythingResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const runSearch = useCallback(async (q: string) => {
+    if (q.trim().length < 2) {
+      setResults(null);
+      return;
+    }
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await invoke<SearchEverythingResponse>('search-everything', { query: q.trim() });
+      setResults(res);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Search failed');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => runSearch(query), 350);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query, runSearch]);
+
+  const hasResults =
+    results &&
+    (results.tracks.length > 0 ||
+      results.venues.length > 0 ||
+      results.djs.length > 0 ||
+      results.events.length > 0);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
+    <View style={styles.container}>
+      <View style={styles.searchBar}>
+        <Ionicons name="search" size={18} color="#888" />
+        <TextInput
+          style={styles.searchInput}
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search tracks, venues, DJs, events"
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+        {query.length > 0 && (
+          <Pressable onPress={() => setQuery('')}>
+            <Ionicons name="close-circle" size={18} color="#bbb" />
+          </Pressable>
+        )}
+      </View>
+
+      {loading && (
+        <View style={styles.loadingBar}>
+          <ActivityIndicator size="small" color="#0a7ea4" />
+        </View>
+      )}
+
+      {error && <Text style={styles.errorText}>{error}</Text>}
+
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        {!query && (
+          <View style={styles.hint}>
+            <Ionicons name="search-outline" size={40} color="#ccc" />
+            <Text style={styles.hintText}>Start typing to search</Text>
+          </View>
+        )}
+
+        {query && !loading && !hasResults && !error && (
+          <View style={styles.hint}>
+            <Ionicons name="sad-outline" size={40} color="#ccc" />
+            <Text style={styles.hintText}>No results for &quot;{query}&quot;</Text>
+          </View>
+        )}
+
+        {results && (
+          <>
+            {results.tracks.length > 0 && (
+              <Section title="Tracks">
+                {results.tracks.map((t) => (
+                  <View key={t.id} style={styles.row}>
+                    {t.artwork_url ? (
+                      <Image source={{ uri: t.artwork_url }} style={styles.thumb} />
+                    ) : (
+                      <View style={[styles.thumb, styles.thumbPlaceholder]}>
+                        <Ionicons name="musical-note" size={20} color="#bbb" />
+                      </View>
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.rowTitle} numberOfLines={1}>
+                        {t.title}
+                      </Text>
+                      <Text style={styles.rowSub} numberOfLines={1}>
+                        {t.artist}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </Section>
+            )}
+
+            {results.venues.length > 0 && (
+              <Section title="Venues">
+                {results.venues.map((v) => (
+                  <View key={v.id} style={styles.row}>
+                    <View style={[styles.thumb, styles.thumbPlaceholder]}>
+                      <Ionicons name="location" size={20} color="#bbb" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.rowTitle} numberOfLines={1}>
+                        {v.name}
+                      </Text>
+                      {v.city && (
+                        <Text style={styles.rowSub} numberOfLines={1}>
+                          {v.city}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </Section>
+            )}
+
+            {results.djs.length > 0 && (
+              <Section title="DJs">
+                {results.djs.map((d) => (
+                  <View key={d.id} style={styles.row}>
+                    {d.avatar_url ? (
+                      <Image source={{ uri: d.avatar_url }} style={styles.thumb} />
+                    ) : (
+                      <View style={[styles.thumb, styles.thumbPlaceholder]}>
+                        <Ionicons name="disc" size={20} color="#bbb" />
+                      </View>
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.rowTitle} numberOfLines={1}>
+                        {d.name}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </Section>
+            )}
+
+            {results.events.length > 0 && (
+              <Section title="Events">
+                {results.events.map((e) => (
+                  <View key={e.id} style={styles.row}>
+                    <View style={[styles.thumb, styles.thumbPlaceholder]}>
+                      <Ionicons name="calendar" size={20} color="#bbb" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.rowTitle} numberOfLines={1}>
+                        {e.name}
+                      </Text>
+                      {e.start_time && (
+                        <Text style={styles.rowSub} numberOfLines={1}>
+                          {new Date(e.start_time).toLocaleDateString()}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </Section>
+            )}
+          </>
+        )}
+      </ScrollView>
+    </View>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {children}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
+  container: { flex: 1, backgroundColor: '#fff' },
+  searchBar: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: '#f3f3f3',
   },
+  searchInput: { flex: 1, fontSize: 15, color: '#111' },
+  loadingBar: { paddingVertical: 8 },
+  errorText: { color: '#c00', textAlign: 'center', padding: 12 },
+  scroll: { paddingBottom: 40 },
+  hint: { alignItems: 'center', gap: 8, padding: 40 },
+  hintText: { color: '#888' },
+  section: { paddingHorizontal: 16, paddingTop: 12 },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  thumb: { width: 40, height: 40, borderRadius: 6 },
+  thumbPlaceholder: {
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowTitle: { fontSize: 15, fontWeight: '600', color: '#111' },
+  rowSub: { fontSize: 13, color: '#777', marginTop: 2 },
 });
