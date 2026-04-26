@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracklist — Design 3: Waveform Focus</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #fff;
+      color: #222;
+      line-height: 1.5;
+    }
+    .header {
+      background: #fff;
+      padding: 16px;
+      border-bottom: 2px solid #0a7ea4;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0a7ea4;
+      letter-spacing: -0.5px;
+    }
+    .feed {
+      padding: 8px;
+    }
+    .clip-card {
+      margin-bottom: 16px;
+      border-left: 4px solid #0a7ea4;
+      padding: 12px 12px 12px 14px;
+      background: #fafafa;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .clip-card:hover {
+      background: #f5f5f5;
+      border-left-color: #06527e;
+    }
+    .clip-card.unmatched {
+      border-left-color: #e8912d;
+    }
+    .clip-card.unmatched:hover {
+      border-left-color: #d47a1a;
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .track-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .title {
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .artist {
+      font-size: 13px;
+      color: #666;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .status {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #fff;
+      font-size: 9px;
+      background: #0a7ea4;
+      white-space: nowrap;
+      margin-left: 8px;
+    }
+    .status.unmatched {
+      background: #e8912d;
+    }
+    .waveform {
+      height: 32px;
+      background: linear-gradient(to right, transparent, #0a7ea4 20%, #0a7ea4 50%, transparent 80%);
+      border-radius: 4px;
+      margin: 8px 0;
+      opacity: 0.3;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #888;
+    }
+    .venue {
+      flex: 1;
+    }
+    .time {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">🎶 Community Crate</div>
+  </div>
+  <div class="feed">
+    <div class="clip-card">
+      <div class="header-row">
+        <div class="track-info">
+          <div class="title">Strings of Life</div>
+          <div class="artist">Derrick May</div>
+        </div>
+        <div class="status">matched</div>
+      </div>
+      <div class="waveform"></div>
+      <div class="meta">
+        <span class="venue">Printworks · Sarah</span>
+        <span class="time">2 min ago</span>
+      </div>
+    </div>
+
+    <div class="clip-card unmatched">
+      <div class="header-row">
+        <div class="track-info">
+          <div class="title">Untitled Track</div>
+          <div class="artist">Help identify it</div>
+        </div>
+        <div class="status unmatched">?</div>
+      </div>
+      <div class="waveform"></div>
+      <div class="meta">
+        <span class="venue">Fabric · Mike</span>
+        <span class="time">15 min ago</span>
+      </div>
+    </div>
+
+    <div class="clip-card unmatched">
+      <div class="header-row">
+        <div class="track-info">
+          <div class="title">Deep Space Funk</div>
+          <div class="artist">Unknown Artist</div>
+        </div>
+        <div class="status unmatched">?</div>
+      </div>
+      <div class="waveform"></div>
+      <div class="meta">
+        <span class="venue">Warehouse · Alex</span>
+        <span class="time">1 hr ago</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

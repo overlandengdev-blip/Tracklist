@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracklist — Design 1 Interactive</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #f5f5f5;
+      line-height: 1.5;
+      overflow: hidden;
+    }
+    .header {
+      background: #1a1a1a;
+      padding: 16px;
+      border-bottom: 1px solid #333;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header-right {
+      display: flex;
+      gap: 8px;
+    }
+    .icon-btn {
+      background: none;
+      border: none;
+      color: #0a7ea4;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .feed {
+      padding: 12px;
+      overflow-y: auto;
+      height: calc(100vh - 60px);
+    }
+    .clip-card {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      margin-bottom: 8px;
+      background: #1a1a1a;
+      border-radius: 10px;
+      border: 1px solid #2a2a2a;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .clip-card:active {
+      background: #222;
+      border-color: #0a7ea4;
+      transform: scale(0.98);
+    }
+    .art {
+      width: 56px;
+      height: 56px;
+      border-radius: 6px;
+      background: #333;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 24px;
+    }
+    .body {
+      flex: 1;
+      min-width: 0;
+    }
+    .title {
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .artist {
+      font-size: 13px;
+      color: #999;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .meta {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .status {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: #0a7ea4;
+      color: #fff;
+      font-size: 9px;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      animation: fadeIn 0.2s;
+    }
+    .modal.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-content {
+      background: #1a1a1a;
+      border-radius: 16px 16px 0 0;
+      padding: 24px 16px;
+      max-height: 80vh;
+      overflow-y: auto;
+      width: 100%;
+      margin-top: auto;
+      animation: slideUp 0.3s;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-close {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .modal-close::before {
+      content: '−';
+      display: block;
+      color: #666;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .modal-art {
+      width: 140px;
+      height: 140px;
+      background: #333;
+      border-radius: 10px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .modal-artist {
+      font-size: 15px;
+      color: #999;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .modal-context {
+      background: #0a0a0a;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: #aaa;
+    }
+    .context-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .context-label { color: #666; }
+    .context-value { color: #f5f5f5; }
+
+    /* Votes / Propose section */
+    .actions-section {
+      margin-bottom: 16px;
+    }
+    .actions-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .vote-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .vote-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #333;
+      background: #0a0a0a;
+      color: #999;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .vote-btn:active {
+      background: #0a7ea4;
+      border-color: #0a7ea4;
+      color: #fff;
+    }
+    .vote-btn.downvote:active {
+      background: #e00;
+      border-color: #e00;
+    }
+    .propose-btn {
+      width: 100%;
+      padding: 12px;
+      background: #0a7ea4;
+      border: none;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .propose-btn:active {
+      background: #06527e;
+    }
+
+    /* Propose modal */
+    .propose-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 110;
+    }
+    .propose-modal.active { display: flex; }
+    .propose-form {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 100%;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      margin: auto;
+    }
+    .form-field {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #666;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #f5f5f5;
+      font-size: 14px;
+    }
+    input::placeholder {
+      color: #555;
+    }
+    .form-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .form-buttons button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cancel-btn {
+      background: #333;
+      color: #f5f5f5;
+    }
+    .cancel-btn:active { background: #444; }
+    .submit-btn {
+      background: #0a7ea4;
+      color: #fff;
+    }
+    .submit-btn:active { background: #06527e; }
+
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">Community Feed</div>
+    <div class="header-right">
+      <button class="icon-btn" title="Refresh">↻</button>
+    </div>
+  </div>
+
+  <div class="feed" id="feed">
+    <!-- Clips populated by JS -->
+  </div>
+
+  <!-- Clip Detail Modal -->
+  <div class="modal" id="clipModal">
+    <div class="modal-content">
+      <div class="modal-close"></div>
+      <div class="modal-art">♫</div>
+      <div class="modal-title" id="modalTitle">Strings of Life</div>
+      <div class="modal-artist" id="modalArtist">Derrick May</div>
+
+      <div class="modal-context">
+        <div class="context-row">
+          <span class="context-label">Posted by</span>
+          <span class="context-value" id="modalPoster">Sarah</span>
+        </div>
+        <div class="context-row">
+          <span class="context-label">Venue</span>
+          <span class="context-value" id="modalVenue">Printworks</span>
+        </div>
+        <div class="context-row">
+          <span class="context-label">Status</span>
+          <span class="context-value" id="modalStatus">matched</span>
+        </div>
+      </div>
+
+      <div class="actions-section" id="voteSection">
+        <div class="actions-title">Community IDs</div>
+        <div class="vote-row">
+          <button class="vote-btn" onclick="vote('up')">👍 Upvote</button>
+          <button class="vote-btn downvote" onclick="vote('down')">👎 Downvote</button>
+        </div>
+      </div>
+
+      <button class="propose-btn" onclick="openProposeModal()">+ Propose a Track ID</button>
+    </div>
+  </div>
+
+  <!-- Propose Modal -->
+  <div class="propose-modal" id="proposeModal">
+    <form class="propose-form" onsubmit="submitProposal(event)">
+      <h2 style="margin-bottom: 16px; font-size: 18px;">Propose a Track ID</h2>
+
+      <div class="form-field">
+        <div class="form-label">Title</div>
+        <input type="text" id="proposeTitle" placeholder="e.g. Strings of Life" required>
+      </div>
+
+      <div class="form-field">
+        <div class="form-label">Artist</div>
+        <input type="text" id="proposeArtist" placeholder="e.g. Derrick May" required>
+      </div>
+
+      <div class="form-field">
+        <div class="form-label">Confidence</div>
+        <select id="proposeConfidence">
+          <option value="guessing">Guessing</option>
+          <option value="pretty_sure" selected>Pretty sure</option>
+          <option value="certain">Certain</option>
+        </select>
+      </div>
+
+      <div class="form-buttons">
+        <button type="button" class="cancel-btn" onclick="closeProposeModal()">Cancel</button>
+        <button type="submit" class="submit-btn">Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const clips = [
+      { id: 1, title: 'Strings of Life', artist: 'Derrick May', poster: 'Sarah', venue: 'Printworks', status: 'matched' },
+      { id: 2, title: 'Untitled Track', artist: 'Help ID it below', poster: 'Mike', venue: 'Fabric', status: 'community' },
+      { id: 3, title: 'Deep Space Funk', artist: 'Unknown Artist', poster: 'Alex', venue: 'Warehouse', status: 'unmatched' },
+      { id: 4, title: 'Acid Dreams', artist: 'Aphex Twin', poster: 'Sam', venue: 'Printworks', status: 'matched' },
+    ];
+
+    let currentClip = null;
+
+    function renderFeed() {
+      const feed = document.getElementById('feed');
+      feed.innerHTML = clips.map(clip => `
+        <div class="clip-card" onclick="openClipModal(${clip.id})">
+          <div class="art">♫</div>
+          <div class="body">
+            <div class="title">${clip.title}</div>
+            <div class="artist">${clip.artist}</div>
+            <div class="meta">${clip.poster} · ${clip.venue}<span class="status">${clip.status}</span></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openClipModal(id) {
+      currentClip = clips.find(c => c.id === id);
+      if (!currentClip) return;
+
+      document.getElementById('modalTitle').textContent = currentClip.title;
+      document.getElementById('modalArtist').textContent = currentClip.artist;
+      document.getElementById('modalPoster').textContent = currentClip.poster;
+      document.getElementById('modalVenue').textContent = currentClip.venue;
+      document.getElementById('modalStatus').textContent = currentClip.status;
+
+      document.getElementById('clipModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeClipModal() {
+      document.getElementById('clipModal').classList.remove('active');
+      document.body.style.overflow = 'auto';
+      currentClip = null;
+    }
+
+    function vote(direction) {
+      const emoji = direction === 'up' ? '👍' : '👎';
+      alert(`Voted ${emoji} on "${currentClip.title}"`);
+      closeClipModal();
+    }
+
+    function openProposeModal() {
+      document.getElementById('proposeModal').classList.add('active');
+    }
+
+    function closeProposeModal() {
+      document.getElementById('proposeModal').classList.remove('active');
+      document.getElementById('proposeTitle').value = '';
+      document.getElementById('proposeArtist').value = '';
+      document.getElementById('proposeConfidence').value = 'pretty_sure';
+    }
+
+    function submitProposal(e) {
+      e.preventDefault();
+      const title = document.getElementById('proposeTitle').value;
+      const artist = document.getElementById('proposeArtist').value;
+      const confidence = document.getElementById('proposeConfidence').value;
+      alert(`Proposed: "${title}" by ${artist} (${confidence})`);
+      closeProposeModal();
+      closeClipModal();
+    }
+
+    // Close modals on backdrop click
+    document.getElementById('clipModal').addEventListener('click', (e) => {
+      if (e.target.id === 'clipModal') closeClipModal();
+    });
+    document.getElementById('proposeModal').addEventListener('click', (e) => {
+      if (e.target.id === 'proposeModal') closeProposeModal();
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeProposeModal();
+        closeClipModal();
+      }
+    });
+
+    // Render on load
+    renderFeed();
+  </script>
+</body>
+</html>

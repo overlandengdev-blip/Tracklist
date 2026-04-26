@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Tracklist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Liquid-glass displacement filter (used by .btn-primary ::after) -->
+  <svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="container-glass" x="0%" y="0%" width="100%" height="100%" colorInterpolationFilters="sRGB">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05 0.05" numOctaves="1" seed="1" result="turbulence"/>
+        <feGaussianBlur in="turbulence" stdDeviation="2" result="blurredNoise"/>
+        <feDisplacementMap in="SourceGraphic" in2="blurredNoise" scale="70" xChannelSelector="R" yChannelSelector="B" result="displaced"/>
+        <feGaussianBlur in="displaced" stdDeviation="4" result="finalBlur"/>
+        <feComposite in="finalBlur" in2="finalBlur" operator="over"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <!-- Animated background -->
+  <div class="bg-wrapper" id="bgWrapper">
+    <video class="bg-video" autoplay muted loop playsinline preload="auto" id="bgVideo">
+      <source src="https://cdn.pixabay.com/video/2024/01/14/196649-902081270_large.mp4" type="video/mp4">
+    </video>
+    <video class="bg-video bg-video-2" autoplay muted loop playsinline preload="auto" id="bgVideo2">
+      <source src="https://cdn.pixabay.com/video/2022/11/02/137516-765904037_large.mp4" type="video/mp4">
+    </video>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="vignette"></div>
+    <div class="noise"></div>
+  </div>
+
+  <!-- ====================== HOME ====================== -->
+  <main class="page page-home active" id="pageHome">
+    <div class="home-content">
+      <!-- top brand kept for spacing, fades in late -->
+      <div class="brand brand-home" data-animate="fade-down" data-delay="3500">
+        <div class="brand-mark">◐</div>
+        <div class="brand-name">Tracklist</div>
+      </div>
+
+      <!-- Loading sequence: waveform morphs into a ring, ring dissolves to reveal wordmark -->
+      <div class="loader" aria-hidden="true">
+        <div class="loader-morph">
+          <span class="loader-bar" style="--i:0"><i></i></span>
+          <span class="loader-bar" style="--i:1"><i></i></span>
+          <span class="loader-bar" style="--i:2"><i></i></span>
+          <span class="loader-bar" style="--i:3"><i></i></span>
+          <span class="loader-bar" style="--i:4"><i></i></span>
+          <span class="loader-bar" style="--i:5"><i></i></span>
+          <span class="loader-bar" style="--i:6"><i></i></span>
+          <span class="loader-bar" style="--i:7"><i></i></span>
+          <span class="loader-bar" style="--i:8"><i></i></span>
+          <span class="loader-bar" style="--i:9"><i></i></span>
+          <span class="loader-bar" style="--i:10"><i></i></span>
+          <span class="loader-bar" style="--i:11"><i></i></span>
+          <span class="loader-bar" style="--i:12"><i></i></span>
+          <span class="loader-bar" style="--i:13"><i></i></span>
+        </div>
+
+        <h1 class="loader-wordmark">Tracklist</h1>
+        <p class="loader-tagline">The crate digger's companion.</p>
+      </div>
+
+      <div class="cta-stack" data-animate="fade-up" data-delay="3700">
+        <button class="btn btn-primary" onclick="goToPage('onboarding')">Get started</button>
+        <button class="btn btn-ghost" onclick="goToPage('login')">Log in</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ====================== ONBOARDING ====================== -->
+  <main class="page page-auth" id="pageOnboarding">
+    <div class="page-content">
+      <button class="back-btn" onclick="goToPage('home')" data-animate="fade-down">← Back</button>
+
+      <div class="onboarding-slides" id="onboardingSlides">
+        <div class="slide active" data-slide="0">
+          <div class="slide-icon">🎧</div>
+          <h2 class="slide-title">Record what's playing</h2>
+          <p class="slide-body">Hold up your phone. We'll capture up to 30 seconds and identify the track.</p>
+        </div>
+        <div class="slide" data-slide="1">
+          <div class="slide-icon">🤝</div>
+          <h2 class="slide-title">Community ID</h2>
+          <p class="slide-body">Didn't auto-match? Post to the community. Someone knows.</p>
+        </div>
+        <div class="slide" data-slide="2">
+          <div class="slide-icon">⭐</div>
+          <h2 class="slide-title">Build your crate</h2>
+          <p class="slide-body">Every ID earns reputation. Unlock badges. Follow venues & DJs.</p>
+        </div>
+      </div>
+
+      <div class="onboarding-footer" data-animate="fade-up" data-delay="400">
+        <div class="dots" id="onboardingDots">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <button class="btn btn-primary" id="onboardingNext" onclick="onboardingNext()">Next</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ====================== LOGIN ====================== -->
+  <main class="page page-auth" id="pageLogin">
+    <div class="page-content">
+      <button class="back-btn" onclick="goToPage('home')" data-animate="fade-down">← Back</button>
+
+      <div class="auth-hero" data-animate="fade-up" data-delay="100">
+        <h1 class="auth-title">Welcome<br>back.</h1>
+      </div>
+
+      <div class="form" data-animate="fade-up" data-delay="250">
+        <div class="field">
+          <input type="email" placeholder="Email" autocomplete="email">
+        </div>
+        <div class="field">
+          <input type="password" placeholder="Password" autocomplete="current-password">
+        </div>
+        <button class="link-btn">Forgot password?</button>
+      </div>
+
+      <div class="auth-footer" data-animate="fade-up" data-delay="400">
+        <button class="btn btn-primary" onclick="goToPage('app')">Log in</button>
+        <p class="auth-alt">No account? <a onclick="goToPage('signup')">Sign up</a></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ====================== SIGNUP ====================== -->
+  <main class="page page-auth" id="pageSignup">
+    <div class="page-content">
+      <button class="back-btn" onclick="goToPage('onboarding')" data-animate="fade-down">← Back</button>
+
+      <div class="auth-hero" data-animate="fade-up" data-delay="100">
+        <h1 class="auth-title">Join the<br>crate.</h1>
+      </div>
+
+      <div class="form" data-animate="fade-up" data-delay="250">
+        <div class="field"><input type="text" placeholder="Display name"></div>
+        <div class="field"><input type="email" placeholder="Email"></div>
+        <div class="field"><input type="password" placeholder="Password"></div>
+      </div>
+
+      <div class="auth-footer" data-animate="fade-up" data-delay="400">
+        <button class="btn btn-primary" onclick="goToPage('app')">Create account</button>
+        <p class="auth-alt">Already have one? <a onclick="goToPage('login')">Log in</a></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- ====================== APP SHELL ====================== -->
+  <main class="page page-app" id="pageApp">
+    <!-- Sub-screens live inside the app shell -->
+    <div class="app-screens">
+
+      <!-- IDENTIFY -->
+      <section class="app-screen active" id="screenIdentify">
+        <header class="app-header">
+          <div class="app-header-title">Tracklist</div>
+          <button class="icon-btn" onclick="goToScreen('notifications')">🔔<span class="badge">3</span></button>
+        </header>
+        <div class="identify-body">
+          <p class="identify-hint">Tap to find the track</p>
+          <button class="record-btn" id="recordBtn" onclick="simulateRecord()">
+            <div class="record-ring"></div>
+            <div class="record-ring-2"></div>
+            <div class="record-core">◐</div>
+          </button>
+          <p class="identify-sub" id="recordStatus">Hold your phone up to the speaker</p>
+          <button class="btn btn-ghost btn-compact" onclick="simulateUpload()">📹 Upload video instead</button>
+        </div>
+      </section>
+
+      <!-- RESULT (matched) -->
+      <section class="app-screen" id="screenResult">
+        <header class="app-header">
+          <button class="icon-btn" onclick="goToScreen('identify')">✕</button>
+          <div class="app-header-title">Matched</div>
+          <div style="width:40px"></div>
+        </header>
+        <div class="result-body">
+          <div class="result-art">♫</div>
+          <div class="result-meta">MATCHED</div>
+          <h2 class="result-title">Strings of Life</h2>
+          <p class="result-artist">Derrick May</p>
+
+          <div class="streaming-row">
+            <button class="stream-btn spotify">Spotify</button>
+            <button class="stream-btn apple">Apple</button>
+            <button class="stream-btn soundcloud">SoundCloud</button>
+            <button class="stream-btn beatport">Beatport</button>
+          </div>
+
+          <button class="btn btn-ghost" onclick="goToScreen('identify')">Identify another</button>
+        </div>
+      </section>
+
+      <!-- COMMUNITY FEED -->
+      <section class="app-screen" id="screenFeed">
+        <header class="app-header">
+          <div class="app-header-title">Community</div>
+          <button class="icon-btn">⟳</button>
+        </header>
+        <div class="feed-list" id="feedList">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- CLIP DETAIL -->
+      <section class="app-screen" id="screenClipDetail">
+        <header class="app-header">
+          <button class="icon-btn" onclick="goToScreen('feed')">←</button>
+          <div class="app-header-title">Clip</div>
+          <button class="icon-btn">⋯</button>
+        </header>
+        <div class="clip-detail-body">
+          <div class="clip-hero">
+            <div class="clip-art">♫</div>
+            <div class="clip-pill">community</div>
+            <h2 class="clip-title" id="clipDetailTitle">Untitled</h2>
+            <p class="clip-sub" id="clipDetailArtist">Help identify it</p>
+            <div class="clip-context" id="clipDetailContext">Mike · Fabric · 15 min ago</div>
+          </div>
+
+          <div class="section-label-row">
+            <span class="section-label">Community IDs</span>
+            <button class="pill-btn" onclick="openProposeSheet()">+ Propose</button>
+          </div>
+
+          <div class="cid-list">
+            <div class="cid-row">
+              <div class="vote-col">
+                <button class="vote-btn up">▲</button>
+                <span class="vote-score">12</span>
+                <button class="vote-btn down">▼</button>
+              </div>
+              <div class="cid-body">
+                <div class="cid-title">Midnight Drive</div>
+                <div class="cid-artist">Floating Points</div>
+                <div class="cid-meta">by Sarah · 2h ago · pretty sure</div>
+              </div>
+            </div>
+            <div class="cid-row">
+              <div class="vote-col">
+                <button class="vote-btn up">▲</button>
+                <span class="vote-score">4</span>
+                <button class="vote-btn down">▼</button>
+              </div>
+              <div class="cid-body">
+                <div class="cid-title">Dusk Patrol</div>
+                <div class="cid-artist">Unknown Mortal Orchestra</div>
+                <div class="cid-meta">by Alex · 5h ago · guessing</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXPLORE / SEARCH -->
+      <section class="app-screen" id="screenExplore">
+        <header class="app-header">
+          <div class="app-header-title">Explore</div>
+          <div style="width:40px"></div>
+        </header>
+        <div class="explore-body">
+          <div class="search-bar">
+            <span class="search-icon">⌕</span>
+            <input type="text" placeholder="Search tracks, venues, DJs" id="searchInput">
+          </div>
+
+          <div class="section-label">Trending venues</div>
+          <div class="chip-row">
+            <button class="chip">Fabric</button>
+            <button class="chip">Printworks</button>
+            <button class="chip">Berghain</button>
+            <button class="chip">Output</button>
+            <button class="chip">Warehouse</button>
+          </div>
+
+          <div class="section-label" style="margin-top:24px">Hot DJs this week</div>
+          <div class="dj-grid">
+            <div class="dj-tile">
+              <div class="dj-avatar">A</div>
+              <div class="dj-name">Anfisa Letyago</div>
+              <div class="dj-plays">42 clips</div>
+            </div>
+            <div class="dj-tile">
+              <div class="dj-avatar">F</div>
+              <div class="dj-name">FJAAK</div>
+              <div class="dj-plays">38 clips</div>
+            </div>
+            <div class="dj-tile">
+              <div class="dj-avatar">H</div>
+              <div class="dj-name">Héctor Oaks</div>
+              <div class="dj-plays">29 clips</div>
+            </div>
+            <div class="dj-tile">
+              <div class="dj-avatar">K</div>
+              <div class="dj-name">KI/KI</div>
+              <div class="dj-plays">22 clips</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROFILE -->
+      <section class="app-screen" id="screenProfile">
+        <header class="app-header">
+          <div class="app-header-title">You</div>
+          <button class="icon-btn" onclick="goToPage('home')">⎋</button>
+        </header>
+        <div class="profile-body">
+          <div class="profile-hero">
+            <div class="profile-avatar">T</div>
+            <h2 class="profile-name">Torbjørn</h2>
+            <p class="profile-handle">@torbjorn</p>
+          </div>
+
+          <div class="stat-row">
+            <div class="stat">
+              <div class="stat-val">47</div>
+              <div class="stat-key">Clips</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val">128</div>
+              <div class="stat-key">Rep</div>
+            </div>
+            <div class="stat">
+              <div class="stat-val">22</div>
+              <div class="stat-key">Accepted</div>
+            </div>
+          </div>
+
+          <div class="section-label">Badges</div>
+          <div class="badge-grid">
+            <div class="badge-chip"><div class="badge-icon">🏆</div><div class="badge-name">First ID</div></div>
+            <div class="badge-chip"><div class="badge-icon">🔥</div><div class="badge-name">10 Accepted</div></div>
+            <div class="badge-chip"><div class="badge-icon">⚡</div><div class="badge-name">Quickdraw</div></div>
+            <div class="badge-chip locked"><div class="badge-icon">🔒</div><div class="badge-name">Veteran</div></div>
+          </div>
+
+          <div class="section-label">Recent activity</div>
+          <div class="activity-list">
+            <div class="activity-row"><span>🎯</span> ID accepted on "Untitled #42"</div>
+            <div class="activity-row"><span>👍</span> 5 upvotes on your proposal</div>
+            <div class="activity-row"><span>🏆</span> Earned "10 Accepted" badge</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTIFICATIONS -->
+      <section class="app-screen" id="screenNotifications">
+        <header class="app-header">
+          <button class="icon-btn" onclick="goToScreen('identify')">←</button>
+          <div class="app-header-title">Notifications</div>
+          <button class="link-btn">Mark all</button>
+        </header>
+        <div class="notif-list">
+          <div class="notif-row unread">
+            <div class="notif-dot"></div>
+            <div class="notif-body">
+              <div class="notif-title">Your ID was accepted!</div>
+              <div class="notif-sub">Sarah accepted your proposal on "Strings of Life"</div>
+              <div class="notif-time">2 min ago</div>
+            </div>
+          </div>
+          <div class="notif-row unread">
+            <div class="notif-dot"></div>
+            <div class="notif-body">
+              <div class="notif-title">Someone ID'd your clip</div>
+              <div class="notif-sub">Mike proposed "Midnight Drive" by Floating Points</div>
+              <div class="notif-time">15 min ago</div>
+            </div>
+          </div>
+          <div class="notif-row unread">
+            <div class="notif-dot"></div>
+            <div class="notif-body">
+              <div class="notif-title">New badge earned!</div>
+              <div class="notif-sub">You earned "10 Accepted"</div>
+              <div class="notif-time">1 hr ago</div>
+            </div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-dot"></div>
+            <div class="notif-body">
+              <div class="notif-title">Your ID got an upvote</div>
+              <div class="notif-sub">3 people agreed with your proposal</div>
+              <div class="notif-time">Yesterday</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Bottom tab bar -->
+    <nav class="tabbar">
+      <button class="tab active" data-screen="identify" onclick="goToScreen('identify')">
+        <span class="tab-icon">◐</span><span class="tab-label">Identify</span>
+      </button>
+      <button class="tab" data-screen="feed" onclick="goToScreen('feed')">
+        <span class="tab-icon">☰</span><span class="tab-label">Community</span>
+      </button>
+      <button class="tab" data-screen="explore" onclick="goToScreen('explore')">
+        <span class="tab-icon">⌕</span><span class="tab-label">Explore</span>
+      </button>
+      <button class="tab" data-screen="profile" onclick="goToScreen('profile')">
+        <span class="tab-icon">◉</span><span class="tab-label">You</span>
+      </button>
+    </nav>
+  </main>
+
+  <!-- ====================== PROPOSE BOTTOM SHEET ====================== -->
+  <div class="sheet-backdrop" id="proposeBackdrop" onclick="closeProposeSheet()"></div>
+  <div class="sheet" id="proposeSheet">
+    <div class="sheet-handle"></div>
+    <h2 class="sheet-title">Propose an ID</h2>
+    <div class="form">
+      <div class="field"><input type="text" placeholder="Track title"></div>
+      <div class="field"><input type="text" placeholder="Artist"></div>
+      <div class="segmented">
+        <button class="seg" data-conf="guessing">Guessing</button>
+        <button class="seg active" data-conf="pretty_sure">Pretty sure</button>
+        <button class="seg" data-conf="certain">Certain</button>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-ghost btn-compact" onclick="closeProposeSheet()">Cancel</button>
+      <button class="btn btn-primary btn-compact" onclick="closeProposeSheet()">Submit</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

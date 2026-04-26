@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracklist — Design 2: Card Grid</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f8f8;
+      color: #222;
+      line-height: 1.5;
+    }
+    .header {
+      background: #fff;
+      padding: 20px 16px;
+      border-bottom: 1px solid #eee;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .header-subtitle {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+    .feed {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .clip-card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #eee;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .clip-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(10, 126, 164, 0.1);
+      border-color: #0a7ea4;
+    }
+    .art {
+      width: 100%;
+      height: 140px;
+      background: linear-gradient(135deg, #0a7ea4 0%, #06527e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 48px;
+    }
+    .content {
+      padding: 12px;
+    }
+    .title {
+      font-size: 13px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+    }
+    .artist {
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+    }
+    .meta {
+      font-size: 10px;
+      color: #999;
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status {
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #fff;
+      font-size: 8px;
+      background: #0a7ea4;
+    }
+    .status.community { background: #e8912d; }
+    .status.unmatched { background: #666; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">What's Playing Tonight</div>
+    <div class="header-subtitle">Latest clips from your community</div>
+  </div>
+  <div class="feed">
+    <div class="clip-card">
+      <div class="art">♫</div>
+      <div class="content">
+        <div class="title">Strings of Life</div>
+        <div class="artist">Derrick May</div>
+        <div class="meta">
+          <span>Sarah</span>
+          <span class="status">matched</span>
+        </div>
+      </div>
+    </div>
+    <div class="clip-card">
+      <div class="art">♫</div>
+      <div class="content">
+        <div class="title">Untitled Track</div>
+        <div class="artist">Help ID it</div>
+        <div class="meta">
+          <span>Mike</span>
+          <span class="status community">help</span>
+        </div>
+      </div>
+    </div>
+    <div class="clip-card">
+      <div class="art">♫</div>
+      <div class="content">
+        <div class="title">Deep Space Funk</div>
+        <div class="artist">Unknown</div>
+        <div class="meta">
+          <span>Alex</span>
+          <span class="status unmatched">?</span>
+        </div>
+      </div>
+    </div>
+    <div class="clip-card">
+      <div class="art">♫</div>
+      <div class="content">
+        <div class="title">Acid Dreams</div>
+        <div class="artist">Aphex Twin</div>
+        <div class="meta">
+          <span>Sam</span>
+          <span class="status">matched</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
